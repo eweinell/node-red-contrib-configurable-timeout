@@ -1,0 +1,30 @@
+{
+	"name": "node-red-contrib-configurable-timeout",
+	"version": "0.1.0",
+	"description": "Node-RED node which listens to input topics and fires timeout events unless a specific reset message is received on the same topic.",
+	"main": "conftimeout.js",
+	"keyword": [ "trigger", "timeout", "configurable" ],
+	"scripts": {
+		"test": "mocha -R spec ./conftimeout.test.js"
+	},
+	"author": "@eweinell",
+	"license": "MIT",
+	"repository": {
+        "type": "git",
+        "url": "https://github.com/eweinell/node-red-contrib-configurable-timeout.git"
+    },
+    "bugs": {
+        "url": "https://github.com/eweinell/node-red-contrib-configurable-timeout/issues"
+    },
+    "dependencies": {
+        "lodash": "^4.17.2"
+    },
+    "devDependencies": {
+        "chai": "^3.5.0"
+    },
+    "node-red": {
+        "nodes": {
+            "configurable-timeout": "conftimeout.js"
+        }
+	}
+}
