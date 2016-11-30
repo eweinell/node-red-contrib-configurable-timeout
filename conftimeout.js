@@ -48,14 +48,12 @@ module.exports = function(RED) {
       if (typeof watch === 'undefined') {
         var newwatch = {
           topic: topic,
-          timeout: createTimeout()
+          timeout: setTimeout(handleTimeout, timeoutMillis)
         };
         watchedTopics[topic || ''] = newwatch;
         
-        function createTimeout() {
-          return setTimeout(function() {
-              node.send({topic: watch.topic, payload: config.timeoutMessage});
-            }, timeoutMillis);
+        function handleTimeout() {
+          node.send({topic: watch.topic, payload: config.timeoutMessage});
         }
       }
     }
