@@ -35,10 +35,10 @@ module.exports = function(RED) {
     
     node.on('input', function(msg) {
       var topic = msg.topic || '';
-      var timeoutval = (config.timeoutQualifier && msg.timeout && msg.timeout[config.timeoutQualifier]) || msg.timeout || config.defaultTimeout;
       if (msg.payload === config.cancelMessage) {
         cancel(topic);
       } else {
+        var timeoutval = (config.timeoutQualifier && msg.timeout && msg.timeout[config.timeoutQualifier]) || msg.timeout || config.defaultTimeout;
         register(topic, parseInt(timeoutval) * 1000);
       }
     });
@@ -46,11 +46,11 @@ module.exports = function(RED) {
     function register(topic, timeoutMillis) {
       var watch = watchedTopics[topic || ''];
       if (typeof watch === 'undefined') {
-        watch = {
+        var newwatch = {
           topic: topic,
           timeout: createTimeout()
         };
-        watchedTopics[topic || ''] = watch;
+        watchedTopics[topic || ''] = newwatch;
         
         function createTimeout() {
           return setTimeout(function() {
