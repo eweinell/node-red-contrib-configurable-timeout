@@ -35,8 +35,9 @@ module.exports = function(RED) {
     
     node.on('input', function(msg) {
       var topic = msg.topic || '';
-      if (msg.payload === config.cancelMessage) {
+      if (msg.payload === config.cancelMessage || msg.canceltimeout === config.cancelMessage) {
         cancel(topic);
+        node.send(msg);
       } else {
         var timeoutval = (config.timeoutQualifier && msg.timeout && msg.timeout[config.timeoutQualifier]) || msg.timeout || config.defaultTimeout;
         register(topic, parseInt(timeoutval) * 1000);
