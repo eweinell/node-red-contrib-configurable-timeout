@@ -35,11 +35,14 @@ module.exports = function(RED) {
     
     node.on('input', function(msg) {
       var topic = msg.topic || '';
-      if (msg.payload === config.cancelMessage || msg.canceltimeout === config.cancelMessage) {
+      if (msg.payload === config.cancelMessage.value || msg.canceltimeout === config.cancelMessage.value) {
+        debug('received cancel message to send downstream');
         cancel(topic);
         node.send(msg);
       } else {
-        var timeoutval = (config.timeoutQualifier && msg.timeout && msg.timeout[config.timeoutQualifier]) || msg.timeout || config.defaultTimeout;
+        debug('received message');
+        var timeoutval = (config.timeoutQualifier.value && msg.timeout && msg.timeout[config.timeoutQualifier.value]) || msg.timeout || config.defaultTimeout.value;
+        debug('received message for topic ' + topic + ' with timeout ' + timeoutval);
         register(topic, parseInt(timeoutval) * 1000);
       }
     });
@@ -47,14 +50,17 @@ module.exports = function(RED) {
     function register(topic, timeoutMillis) {
       var watch = watchedTopics[topic || ''];
       if (typeof watch === 'undefined') {
+        var to = setTimeout(handleTimeout, timeoutMillis);
         var newwatch = {
           topic: topic,
-          timeout: setTimeout(handleTimeout, timeoutMillis)
+          timeout: to
         };
         watchedTopics[topic || ''] = newwatch;
+        debug('set new timeout for topic ' + topic);
         
         function handleTimeout() {
-          node.send({topic: watch.topic, payload: config.timeoutMessage});
+          debug('sent timeout message for topic ' + topic);
+          node.send({topic: newwatch.topic, payload: config.timeoutMessage.value});
         }
       }
     }
@@ -64,6 +70,7 @@ module.exports = function(RED) {
       if (typeof watch !== 'undefined') {
         clearTimeout(watch.timeout);
         watchedTopics = _omit(watchedTopics, watch.topic);
+        debug('cancelled timeout for topic ' + topic);
       }
     }
     
@@ -74,5 +81,11 @@ module.exports = function(RED) {
       watchedTopics = {};
       node.status({});
     }
+    
+    function debug(msg) {
+      if (config.debug.value) {
+       node.send({debug: msg}) 
+      }
+    }
   });
-};
+}
