@@ -30,18 +30,22 @@ module.exports = function(RED) {
     
     var node = this;
     var watchedTopics = {};
+    var count = 0;
     
     node.on('close', cancelAll);
     
     node.on('input', function(msg) {
       var topic = msg.topic || '';
-      if (msg.payload === config.cancelMessage.value || msg.canceltimeout === config.cancelMessage.value) {
+      if (msg.payload === config.cancelmsg || msg.canceltimeout === config.cancelmsg) {
         debug('received cancel message to send downstream');
-        cancel(topic);
-        node.send(msg);
+        if (!cancel(topic)) {
+          node.send(msg);
+        }
       } else {
-        debug('received message');
-        var timeoutval = (config.timeoutQualifier.value && msg.timeout && msg.timeout[config.timeoutQualifier.value]) || msg.timeout || config.defaultTimeout.value;
+        var timeoutval = (config.timeoutQualifier && msg.timeout && (typeof msg.timeout[config.timeoutQualifier] === 'number')) ?
+            msg.timeout[config.timeoutQualifier] : 
+            (typeof msg.timeout === 'number' ? msg.timeout : 
+              config.defaultTimeout);
         debug('received message for topic ' + topic + ' with timeout ' + timeoutval);
         register(topic, parseInt(timeoutval) * 1000);
       }
@@ -56,11 +60,14 @@ module.exports = function(RED) {
           timeout: to
         };
         watchedTopics[topic || ''] = newwatch;
+        count++;
+        update();
         debug('set new timeout for topic ' + topic);
         
         function handleTimeout() {
           debug('sent timeout message for topic ' + topic);
-          node.send({topic: newwatch.topic, payload: config.timeoutMessage.value});
+          node.send({topic: newwatch.topic, payload: config.timeoutMessage});
+          cancel(topic);
         }
       }
     }
@@ -69,9 +76,13 @@ module.exports = function(RED) {
       var watch = watchedTopics[topic || ''];
       if (typeof watch !== 'undefined') {
         clearTimeout(watch.timeout);
-        watchedTopics = _omit(watchedTopics, watch.topic);
+        watchedTopics = _.omit(watchedTopics, watch.topic);
+        count--;
+        update();
         debug('cancelled timeout for topic ' + topic);
+        return true;
       }
+      return false;
     }
     
     function cancelAll() {
@@ -79,12 +90,19 @@ module.exports = function(RED) {
         clearTimeout(v.timeout);
       });
       watchedTopics = {};
+      count = 0;
+      update();
       node.status({});
     }
     
+    function update() {
+      node.status({fill: count > 0 ? 'blue' : 'grey', shape:'dot', text:'tracking ' + count + ' topics'});
+    }
+    
     function debug(msg) {
-      if (config.debug.value) {
-       node.send({debug: msg}) 
+      if (config.debug) {
+       console.log(msg);
+       node.send({debug: msg}); 
       }
     }
   });
