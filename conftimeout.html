@@ -26,21 +26,51 @@ THE SOFTWARE.
 		color: '#DAC4B4',
 		defaults: {
 			name: {value: ''},
-			timeout: {value: 5, validate:RED.validators.number(), required: true},
-			timeoutunit: {value: 'seconds', required: true},
-			cancelmessage: {value: '', required: true}
+			defaultTimeout: {value: 5, validate:RED.validators.number(), required: true},
+			timeoutMessage: {value: '', required: true},
+			cancelmsg: {value: '', required: true},
+			timeoutQualifier: {value: '', required: false},
+			debug: {value: false}
 		},
 		inputs: 1,
 		outputs: 1,
 		label: function() {
 			return this.name || 'Conf. Timeout';
 		},
-		paletteLabel: 'configurable timeout',
+		paletteLabel: 'timeout',
 		align: 'left'
 	});
 </script>
 
 <script type="text/x-red" data-template-name="configurable-timeout">
+	<div class="form-row">
+		<label for="node-input-name"><i class="icon-tag"></i> Name</label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-defaultTimeout"><i class="fa"></i> Default timeout</label>
+		<input type="text" id="node-input-defaultTimeout" placeholder="">
+	</div>
+	<div class="form-tips">Default timeout unless overridden by messages, in seconds</div>
+	<div class="form-row">
+		<label for="node-input-timeoutMessage"><i class="fa"></i> Timeout msg</label>
+		<input type="text" id="node-input-timeoutMessage" placeholder="">
+	</div>
+	<div class="form-tips">Message to send downstream in case an initiated timeout has been reached</div>
+	<div class="form-row">
+		<label for="node-input-cancelmsg"><i class="fa"></i> Cancel msg</label>
+		<input type="text" id="node-input-cancelmsg" placeholder="">
+	</div>
+	<div class="form-tips">Message when received from upstream will cancel the timeout until the next message is received</div>
+	<div class="form-row">
+		<label for="node-input-timeoutQualifier"><i class="fa"></i>Timeout qualifier</label>
+		<input type="text" id="node-input-timeoutQualifier" placeholder="">
+	</div>
+	<div class="form-tips">Qualifier used to receive timeout configurations</div>
+	<div class="form-row">
+		<label for="node-input-debug"><i class="fa"></i>Debug output</label>
+		<input type="checkbox" id="node-input-debug" placeholder="">
+	</div>
 </script>
 
 <script type="text/x-red" data-help-name="configurable-timeout">
